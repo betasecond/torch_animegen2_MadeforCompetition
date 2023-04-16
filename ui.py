@@ -9,6 +9,28 @@ import re
 import subprocess
 
 
+def get_project_root():
+    # Get the current working directory
+    current_dir = os.path.abspath(os.curdir)
+
+    # Traverse up the directory tree to find the root directory
+    while not os.path.exists(os.path.join(current_dir, ".git")):
+        current_dir = os.path.dirname(current_dir)
+
+        # If we reach the system root, break the loop
+        if current_dir == os.path.dirname(current_dir):
+            raise Exception("Project root not found. Make sure the script is run within a Git repository.")
+
+    return current_dir
+
+
+# Get the project root directory
+project_root = get_project_root()
+
+# Change the current working directory to the project root
+os.chdir(project_root)
+
+
 def find_matching_file(filename, directory):
     for file in os.listdir(directory):
         if os.path.splitext(file)[1] == ".jpg":
@@ -64,7 +86,8 @@ def generate():
     import os
     selected_weight = weight_var.get()
     input_image_path = input_image_label.cget("text")
-    output_dir = os.path.abspath("C:\\PythonProject\\re_animegen2\\samples\\results")
+    # output_dir = os.path.abspath("C:\\PythonProject\\re_animegen2\\samples\\results")
+    output_dir = os.path.abspath(f"{project_root}\\samples\\results")
     delete_old(output_dir)
     if not input_image_path or input_image_path == "No image selected":
         messagebox.showerror("Error", "Please select an input image.")
@@ -78,7 +101,7 @@ def generate():
 
     # input_dir = input_image_path
     # 构造 CMD 命令
-    cmd = f'cd "C:\\PythonProject\\re_animegen2" && conda activate ldm && python main.py --input_dir "{input_dir}"  --checkpoint "C:\\PythonProject\\re_animegen2\\weights\\{selected_weight}.pt"'
+    cmd = f'cd "{project_root}" && conda activate ldm && python main.py --input_dir "{input_dir}"  --checkpoint "C:\\PythonProject\\re_animegen2\\weights\\{selected_weight}.pt"'
 
     # 运行 CMD 命令
     subprocess.run(cmd, shell=True, check=True)
